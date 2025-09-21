@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoftManager - Software Repository</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">📦</span>
+                    <span class="logo-text">SoftManager</span>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn" data-page="home">Home</button>
+                    <button class="nav-btn" data-page="admin">Admin</button>
+                    <button class="nav-btn" data-page="help">Help</button>
+                    <button class="notifications-btn" id="notificationsBtn">
+                        <span class="notification-icon">🔔</span>
+                        <span class="notification-badge" id="notificationBadge">2</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel hidden" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" id="closeNotifications">×</button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+            <!-- Notifications will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Page -->
+        <div class="page active" id="homePage">
+            <div class="container">
+                <!-- Hero Section -->
+                <section class="hero">
+                    <h1 class="hero-title">Select Your Software Bundle</h1>
+                    <p class="hero-subtitle">Choose individual software or pre-made clusters for easy installation</p>
+                </section>
+
+                <!-- Controls -->
+                <section class="controls">
+                    <div class="search-container">
+                        <input type="text" class="form-control search-input" id="searchInput" placeholder="Search software...">
+                    </div>
+                    <div class="filter-container">
+                        <select class="form-control filter-select" id="categoryFilter">
+                            <option value="All">All Categories</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Clusters Section -->
+                <section class="clusters-section">
+                    <h2 class="section-title">Pre-made Clusters</h2>
+                    <div class="clusters-grid" id="clustersGrid">
+                        <!-- Clusters will be populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Software Grid -->
+                <section class="software-section">
+                    <h2 class="section-title">Individual Software</h2>
+                    <div class="software-grid" id="softwareGrid">
+                        <!-- Software will be populated by JavaScript -->
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div class="page" id="adminPage">
+            <div class="container">
+                <!-- Admin Login -->
+                <div class="admin-login" id="adminLogin">
+                    <div class="card">
+                        <div class="card__body">
+                            <h2>Admin Login</h2>
+                            <form id="loginForm">
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="adminUsername" value="admin">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="adminPassword" value="admin123">
+                                </div>
+                                <button type="submit" class="btn btn--primary btn--full-width">Login</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Dashboard -->
+                <div class="admin-dashboard hidden" id="adminDashboard">
+                    <div class="admin-header">
+                        <h2>Admin Dashboard</h2>
+                        <button class="btn btn--secondary" id="logoutBtn">Logout</button>
+                    </div>
+
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="software">Software Management</button>
+                        <button class="admin-tab" data-tab="clusters">Cluster Management</button>
+                        <button class="admin-tab" data-tab="stats">Statistics</button>
+                    </div>
+
+                    <!-- Software Management Tab -->
+                    <div class="admin-content active" id="softwareTab">
+                        <div class="admin-actions">
+                            <button class="btn btn--primary" id="addSoftwareBtn">Add Software</button>
+                        </div>
+                        <div class="admin-software-list" id="adminSoftwareList">
+                            <!-- Admin software list will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Cluster Management Tab -->
+                    <div class="admin-content" id="clustersTab">
+                        <div class="admin-actions">
+                            <button class="btn btn--primary" id="addClusterBtn">Create Cluster</button>
+                        </div>
+                        <div class="admin-clusters-list" id="adminClustersList">
+                            <!-- Admin clusters list will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Statistics Tab -->
+                    <div class="admin-content" id="statsTab">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Total Software</h3>
+                                <div class="stat-value" id="totalSoftware">10</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Total Clusters</h3>
+                                <div class="stat-value" id="totalClusters">4</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Downloads Today</h3>
+                                <div class="stat-value">23</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Updates Available</h3>
+                                <div class="stat-value" id="updatesAvailable">2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Page -->
+        <div class="page" id="helpPage">
+            <div class="container">
+                <div class="help-content">
+                    <h2>How to Use SoftManager</h2>
+                    <div class="help-steps">
+                        <div class="help-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Browse Software</h3>
+                                <p>Explore available software by category or use the search function to find specific applications.</p>
+                            </div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Select or Use Clusters</h3>
+                                <p>Choose individual software or select pre-made clusters for common use cases like development or office work.</p>
+                            </div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Generate Installer</h3>
+                                <p>Click "Generate Installer" to create a custom ZIP package with all selected software and installation script.</p>
+                            </div>
+                        </div>
+                        <div class="help-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>Run Installation</h3>
+                                <p>Extract the ZIP and run the included batch file for automatic silent installation of all selected software.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Selection Cart -->
+    <div class="selection-cart" id="selectionCart">
+        <div class="cart-header">
+            <h3>Selected Software</h3>
+            <button class="close-btn" id="closeCart">×</button>
+        </div>
+        <div class="cart-content">
+            <div class="selected-items" id="selectedItems">
+                <!-- Selected items will be populated -->
+            </div>
+            <div class="cart-footer">
+                <div class="total-size">Total Size: <span id="totalSize">0 MB</span></div>
+                <button class="btn btn--primary btn--full-width" id="generateBtn" disabled>Generate Installer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for forms -->
+    <div class="modal hidden" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Modal Title</h3>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal hidden" id="progressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generating Installer Package</h3>
+            </div>
+            <div class="modal-body">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Preparing files...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
