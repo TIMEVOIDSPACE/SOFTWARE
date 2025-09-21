@@ -3,246 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoftManager - Software Repository</title>
+    <title>SoftRepo - Dark Edition</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="logo-icon">📦</span>
-                    <span class="logo-text">SoftManager</span>
-                </div>
-                <nav class="nav">
-                    <button class="nav-btn" data-page="home">Home</button>
-                    <button class="nav-btn" data-page="admin">Admin</button>
-                    <button class="nav-btn" data-page="help">Help</button>
-                    <button class="notifications-btn" id="notificationsBtn">
-                        <span class="notification-icon">🔔</span>
-                        <span class="notification-badge" id="notificationBadge">2</span>
-                    </button>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Notifications Panel -->
-    <div class="notifications-panel hidden" id="notificationsPanel">
-        <div class="notifications-header">
-            <h3>Notifications</h3>
-            <button class="close-btn" id="closeNotifications">×</button>
-        </div>
-        <div class="notifications-list" id="notificationsList">
-            <!-- Notifications will be populated by JavaScript -->
-        </div>
+    <!-- Background Effects -->
+    <div class="background-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
     </div>
 
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-code-branch brand-icon"></i>
+                <div class="brand-text">
+                    <span class="brand-name">SoftRepo</span>
+                    <span class="brand-subtitle">Dark Edition</span>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="#" class="nav-btn active" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-btn" data-page="clusters">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Clusters</span>
+                </a>
+                <a href="#" class="nav-btn" data-page="admin">
+                    <i class="fas fa-cog"></i>
+                    <span>Admin</span>
+                </a>
+                <button id="notificationsBtn" class="nav-btn notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">2</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <!-- Main Content -->
-    <main class="main">
+    <div class="main-content">
         <!-- Home Page -->
-        <div class="page active" id="homePage">
-            <div class="container">
-                <!-- Hero Section -->
-                <section class="hero">
-                    <h1 class="hero-title">Select Your Software Bundle</h1>
-                    <p class="hero-subtitle">Choose individual software or pre-made clusters for easy installation</p>
-                </section>
+        <div id="homePage" class="page active">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="title-main">Software Management</span>
+                        <span class="title-gradient">Reimagined</span>
+                    </h1>
+                    <p class="hero-description">
+                        Experience intelligent software installation with auto-detection technology
+                        in a sleek, modern dark interface designed for developers.
+                    </p>
+                </div>
+            </div>
 
-                <!-- Controls -->
-                <section class="controls">
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input" id="searchInput" placeholder="Search software...">
-                    </div>
-                    <div class="filter-container">
-                        <select class="form-control filter-select" id="categoryFilter">
-                            <option value="All">All Categories</option>
-                        </select>
-                    </div>
-                </section>
+            <!-- Search and Filter Section -->
+            <div class="search-section">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search software...">
+                </div>
+                <div class="filter-container">
+                    <select id="categoryFilter" class="category-filter">
+                        <option value="All">All Categories</option>
+                    </select>
+                </div>
+            </div>
 
-                <!-- Clusters Section -->
-                <section class="clusters-section">
-                    <h2 class="section-title">Pre-made Clusters</h2>
-                    <div class="clusters-grid" id="clustersGrid">
-                        <!-- Clusters will be populated by JavaScript -->
-                    </div>
-                </section>
+            <!-- Software Grid -->
+            <div class="software-grid" id="softwareGrid">
+                <!-- Software cards will be rendered here -->
+            </div>
+        </div>
 
-                <!-- Software Grid -->
-                <section class="software-section">
-                    <h2 class="section-title">Individual Software</h2>
-                    <div class="software-grid" id="softwareGrid">
-                        <!-- Software will be populated by JavaScript -->
-                    </div>
-                </section>
+        <!-- Clusters Page -->
+        <div id="clustersPage" class="page">
+            <div class="page-header">
+                <h2 class="page-title">Software Clusters</h2>
+                <p class="page-description">Pre-configured software bundles for instant productivity</p>
+            </div>
+            <div class="clusters-grid" id="clustersGrid">
+                <!-- Cluster cards will be rendered here -->
             </div>
         </div>
 
         <!-- Admin Page -->
-        <div class="page" id="adminPage">
-            <div class="container">
-                <!-- Admin Login -->
-                <div class="admin-login" id="adminLogin">
-                    <div class="card">
-                        <div class="card__body">
-                            <h2>Admin Login</h2>
-                            <form id="loginForm">
-                                <div class="form-group">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" id="adminUsername" value="admin">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="adminPassword" value="admin123">
-                                </div>
-                                <button type="submit" class="btn btn--primary btn--full-width">Login</button>
-                            </form>
+        <div id="adminPage" class="page">
+            <!-- Admin Login -->
+            <div id="adminLogin" class="admin-login">
+                <div class="login-card">
+                    <div class="login-header">
+                        <i class="fas fa-shield-alt login-icon"></i>
+                        <h3>Admin Access</h3>
+                        <p>Enter your credentials to continue</p>
+                    </div>
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" id="adminUsername" class="form-control" placeholder="admin" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="adminPassword" class="form-control" placeholder="admin123" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="adminDashboard" class="admin-dashboard hidden">
+                <div class="admin-header">
+                    <h2>Admin Dashboard</h2>
+                    <button id="logoutBtn" class="btn btn-outline">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="totalSoftware">0</span>
+                            <span class="stat-label">Total Software</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="totalClusters">0</span>
+                            <span class="stat-label">Total Clusters</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="updatesAvailable">0</span>
+                            <span class="stat-label">Updates Available</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Admin Dashboard -->
-                <div class="admin-dashboard hidden" id="adminDashboard">
-                    <div class="admin-header">
-                        <h2>Admin Dashboard</h2>
-                        <button class="btn btn--secondary" id="logoutBtn">Logout</button>
-                    </div>
+                <!-- Admin Tabs -->
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-tab="files">
+                        <i class="fas fa-upload"></i>
+                        File Upload
+                    </button>
+                    <button class="admin-tab" data-tab="software">
+                        <i class="fas fa-cogs"></i>
+                        Software
+                    </button>
+                    <button class="admin-tab" data-tab="clusters">
+                        <i class="fas fa-layer-group"></i>
+                        Clusters
+                    </button>
+                </div>
 
-                    <div class="admin-tabs">
-                        <button class="admin-tab active" data-tab="software">Software Management</button>
-                        <button class="admin-tab" data-tab="clusters">Cluster Management</button>
-                        <button class="admin-tab" data-tab="stats">Statistics</button>
-                    </div>
-
-                    <!-- Software Management Tab -->
-                    <div class="admin-content active" id="softwareTab">
-                        <div class="admin-actions">
-                            <button class="btn btn--primary" id="addSoftwareBtn">Add Software</button>
-                        </div>
-                        <div class="admin-software-list" id="adminSoftwareList">
-                            <!-- Admin software list will be populated -->
-                        </div>
-                    </div>
-
-                    <!-- Cluster Management Tab -->
-                    <div class="admin-content" id="clustersTab">
-                        <div class="admin-actions">
-                            <button class="btn btn--primary" id="addClusterBtn">Create Cluster</button>
-                        </div>
-                        <div class="admin-clusters-list" id="adminClustersList">
-                            <!-- Admin clusters list will be populated -->
-                        </div>
-                    </div>
-
-                    <!-- Statistics Tab -->
-                    <div class="admin-content" id="statsTab">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <h3>Total Software</h3>
-                                <div class="stat-value" id="totalSoftware">10</div>
+                <!-- File Upload Tab -->
+                <div id="filesTab" class="admin-content active">
+                    <div class="upload-section">
+                        <h3>Direct File Upload</h3>
+                        <div id="dropZone" class="drop-zone">
+                            <div class="drop-content">
+                                <i class="fas fa-cloud-upload-alt drop-icon"></i>
+                                <h4>Drag & Drop Files Here</h4>
+                                <p>Or click to browse for installer files</p>
+                                <p class="file-types">Supported: .exe, .msi, .pkg, .dmg</p>
+                                <input type="file" id="fileInput" multiple accept=".exe,.msi,.pkg,.dmg" hidden>
+                                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-folder-open"></i>
+                                    Browse Files
+                                </button>
                             </div>
-                            <div class="stat-card">
-                                <h3>Total Clusters</h3>
-                                <div class="stat-value" id="totalClusters">4</div>
+                        </div>
+
+                        <!-- Uploaded Files List -->
+                        <div class="uploaded-files">
+                            <h4>Uploaded Files</h4>
+                            <div id="uploadedFilesList" class="files-list">
+                                <!-- Uploaded files will appear here -->
                             </div>
-                            <div class="stat-card">
-                                <h3>Downloads Today</h3>
-                                <div class="stat-value">23</div>
+                        </div>
+
+                        <!-- Upload Progress -->
+                        <div id="uploadProgress" class="upload-progress hidden">
+                            <div class="progress-header">
+                                <span>Uploading files...</span>
+                                <span id="uploadPercent">0%</span>
                             </div>
-                            <div class="stat-card">
-                                <h3>Updates Available</h3>
-                                <div class="stat-value" id="updatesAvailable">2</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Help Page -->
-        <div class="page" id="helpPage">
-            <div class="container">
-                <div class="help-content">
-                    <h2>How to Use SoftManager</h2>
-                    <div class="help-steps">
-                        <div class="help-step">
-                            <div class="step-number">1</div>
-                            <div class="step-content">
-                                <h3>Browse Software</h3>
-                                <p>Explore available software by category or use the search function to find specific applications.</p>
-                            </div>
-                        </div>
-                        <div class="help-step">
-                            <div class="step-number">2</div>
-                            <div class="step-content">
-                                <h3>Select or Use Clusters</h3>
-                                <p>Choose individual software or select pre-made clusters for common use cases like development or office work.</p>
-                            </div>
-                        </div>
-                        <div class="help-step">
-                            <div class="step-number">3</div>
-                            <div class="step-content">
-                                <h3>Generate Installer</h3>
-                                <p>Click "Generate Installer" to create a custom ZIP package with all selected software and installation script.</p>
-                            </div>
-                        </div>
-                        <div class="help-step">
-                            <div class="step-number">4</div>
-                            <div class="step-content">
-                                <h3>Run Installation</h3>
-                                <p>Extract the ZIP and run the included batch file for automatic silent installation of all selected software.</p>
-                            </div>
-                        </div>
+                <!-- Software Management Tab -->
+                <div id="softwareTab" class="admin-content">
+                    <div class="content-header">
+                        <h3>Manage Software</h3>
+                        <button id="addSoftwareBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Software
+                        </button>
+                    </div>
+                    <div id="adminSoftwareList" class="admin-list">
+                        <!-- Software list will be rendered here -->
                     </div>
                 </div>
-            </div>
-        </div>
-    </main>
 
-    <!-- Selection Cart -->
-    <div class="selection-cart" id="selectionCart">
-        <div class="cart-header">
-            <h3>Selected Software</h3>
-            <button class="close-btn" id="closeCart">×</button>
-        </div>
-        <div class="cart-content">
-            <div class="selected-items" id="selectedItems">
-                <!-- Selected items will be populated -->
-            </div>
-            <div class="cart-footer">
-                <div class="total-size">Total Size: <span id="totalSize">0 MB</span></div>
-                <button class="btn btn--primary btn--full-width" id="generateBtn" disabled>Generate Installer</button>
+                <!-- Clusters Management Tab -->
+                <div id="clustersTab" class="admin-content">
+                    <div class="content-header">
+                        <h3>Manage Clusters</h3>
+                        <button id="addClusterBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Create Cluster
+                        </button>
+                    </div>
+                    <div id="adminClustersList" class="admin-list">
+                        <!-- Clusters list will be rendered here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal for forms -->
-    <div class="modal hidden" id="modal">
+    <!-- Selection Cart -->
+    <div id="selectionCart" class="selection-cart">
+        <div class="cart-header">
+            <h3>
+                <i class="fas fa-shopping-cart"></i>
+                Selected Software
+            </h3>
+            <button id="closeCart" class="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="selectedItems" class="selected-items">
+            <!-- Selected items will appear here -->
+        </div>
+        <div class="cart-summary">
+            <div class="total-size">
+                Total Size: <span id="totalSize">0 MB</span>
+            </div>
+            <button id="generateBtn" class="btn btn-primary btn-full" disabled>
+                <i class="fas fa-magic"></i>
+                Generate Smart Installer
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="notifications-panel hidden">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button id="closeNotifications" class="notifications-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="notificationsList" class="notifications-list">
+            <!-- Notifications will appear here -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">Modal Title</h3>
-                <button class="close-btn" id="closeModal">×</button>
+                <button id="closeModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Modal content will be populated -->
+            <div id="modalBody" class="modal-body">
+                <!-- Modal content will be inserted here -->
             </div>
         </div>
     </div>
 
     <!-- Progress Modal -->
-    <div class="modal hidden" id="progressModal">
+    <div id="progressModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Generating Installer Package</h3>
-            </div>
-            <div class="modal-body">
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-text" id="progressText">Preparing files...</div>
+            <div class="progress-modal-content">
+                <div class="progress-animation">
+                    <div class="loading-spinner"></div>
+                </div>
+                <h3>Generating Installer</h3>
+                <p id="progressText">Preparing files...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
                 </div>
             </div>
         </div>
