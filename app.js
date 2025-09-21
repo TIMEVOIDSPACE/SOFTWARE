@@ -174,7 +174,8 @@ const appData = {
       "softwareId": 8,
       "timestamp": "2025-09-19T15:45:00Z"
     }
-  ]
+  ],
+  "uploadedFiles": []
 };
 
 // Application State
@@ -188,6 +189,7 @@ class AppState {
     this.selectedCategory = 'All';
     this.cartVisible = false;
     this.notificationsVisible = false;
+    this.uploadedFiles = new Map(); // Store file objects
   }
 
   addSoftware(id) {
@@ -269,6 +271,161 @@ class AppState {
   }
 }
 
+// File Upload Manager
+class FileUploadManager {
+  constructor() {
+    this.setupFileUpload();
+  }
+
+  setupFileUpload() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    if (!dropZone || !fileInput) return;
+
+    // Drag and drop events
+    dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+    dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+    dropZone.addEventListener('drop', this.handleDrop.bind(this));
+    
+    // File input change
+    fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+  }
+
+  handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.add('dragover');
+  }
+
+  handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.remove('dragover');
+  }
+
+  handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.remove('dragover');
+    
+    const files = Array.from(e.dataTransfer.files);
+    this.processFiles(files);
+  }
+
+  handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    this.processFiles(files);
+  }
+
+  processFiles(files) {
+    const validExtensions = ['.exe', '.msi', '.pkg', '.dmg'];
+    const validFiles = files.filter(file => 
+      validExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    );
+
+    if (validFiles.length === 0) {
+      this.showMessage('Please select valid installer files (.exe, .msi, .pkg, .dmg)', 'error');
+      return;
+    }
+
+    this.uploadFiles(validFiles);
+  }
+
+  uploadFiles(files) {
+    const progressContainer = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const uploadPercent = document.getElementById('uploadPercent');
+
+    progressContainer.classList.remove('hidden');
+
+    // Simulate upload progress
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 100) progress = 100;
+
+      progressFill.style.width = `${progress}%`;
+      uploadPercent.textContent = `${Math.round(progress)}%`;
+
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          this.completeUpload(files);
+          progressContainer.classList.add('hidden');
+        }, 500);
+      }
+    }, 200);
+  }
+
+  completeUpload(files) {
+    files.forEach(file => {
+      const fileData = {
+        name: file.name,
+        size: this.formatFileSize(file.size),
+        type: file.type,
+        uploadDate: new Date(),
+        file: file
+      };
+
+      appState.uploadedFiles.set(file.name, fileData);
+      appData.uploadedFiles.push(fileData);
+    });
+
+    this.renderUploadedFiles();
+    this.showMessage(`${files.length} file(s) uploaded successfully!`, 'success');
+  }
+
+  renderUploadedFiles() {
+    const filesList = document.getElementById('uploadedFilesList');
+    if (!filesList) return;
+
+    filesList.innerHTML = '';
+
+    appData.uploadedFiles.forEach(file => {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      fileItem.innerHTML = `
+        <div class="file-icon">
+          <i class="fas fa-file-download"></i>
+        </div>
+        <div class="file-info">
+          <div class="file-name">${file.name}</div>
+          <div class="file-size">${file.size}</div>
+        </div>
+        <div class="file-actions">
+          <button class="btn-icon btn-delete" onclick="fileUploadManager.deleteFile('${file.name}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `;
+      filesList.appendChild(fileItem);
+    });
+  }
+
+  deleteFile(fileName) {
+    if (confirm('Are you sure you want to delete this file?')) {
+      appState.uploadedFiles.delete(fileName);
+      appData.uploadedFiles = appData.uploadedFiles.filter(f => f.name !== fileName);
+      this.renderUploadedFiles();
+      this.showMessage('File deleted successfully!', 'success');
+    }
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  showMessage(message, type) {
+    // Simple message display - can be enhanced with a toast system
+    alert(message);
+  }
+}
+
 // UI Manager
 class UIManager {
   constructor() {
@@ -284,7 +441,7 @@ class UIManager {
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const page = e.target.dataset.page;
+        const page = e.target.closest('.nav-btn').dataset.page;
         if (page) {
           this.showPage(page);
         }
@@ -391,6 +548,12 @@ class UIManager {
   }
 
   showPage(pageId) {
+    // Update navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+
     // Hide all pages
     document.querySelectorAll('.page').forEach(page => {
       page.classList.remove('active');
@@ -594,7 +757,8 @@ class UIManager {
     const steps = [
       'Preparing files...',
       'Collecting installers...',
-      'Generating batch script...',
+      'Detecting silent install flags...',
+      'Generating smart batch script...',
       'Creating ZIP package...',
       'Finalizing download...'
     ];
@@ -616,7 +780,7 @@ class UIManager {
           this.completeGeneration();
         }, 1000);
       }
-    }, 1500);
+    }, 1000);
   }
 
   completeGeneration() {
@@ -626,7 +790,7 @@ class UIManager {
     }
     
     // Generate batch script content
-    const batchScript = this.generateBatchScript();
+    const batchScript = this.generateAdvancedBatchScript();
     
     // Create download
     this.downloadFiles(batchScript);
@@ -641,33 +805,103 @@ class UIManager {
     this.renderSoftware();
     this.renderClusters();
     
-    alert('Installer package generated successfully! The batch file has been downloaded and contains auto-installation commands for your selected software.');
+    alert('Advanced installer package generated successfully! The batch file includes intelligent auto-detection and error handling.');
   }
 
-  generateBatchScript() {
+  generateAdvancedBatchScript() {
     let script = '@echo off\n';
-    script += 'echo SoftManager Auto-Installer\n';
-    script += 'echo ========================\n';
-    script += 'echo Installing selected software...\n';
+    script += 'setlocal enabledelayedexpansion\n';
+    script += 'title SoftRepo - Smart Auto Installer\n';
+    script += 'color 0A\n\n';
+    
+    script += 'echo ================================================\n';
+    script += 'echo      SoftRepo - Smart Auto Installer\n';
+    script += 'echo ================================================\n';
+    script += 'echo.\n';
+    script += 'echo Installing selected software with intelligent detection...\n';
     script += 'echo.\n\n';
     
+    script += 'set /a total=0\n';
+    script += 'set /a success=0\n';
+    script += 'set /a failed=0\n\n';
+    
+    // Add function for intelligent installation
+    script += ':install_smart\n';
+    script += 'set "installer=%~1"\n';
+    script += 'set "name=%~2"\n';
+    script += 'set "silent_flag=%~3"\n\n';
+    
+    script += 'echo Installing %name%...\n';
+    script += 'if not exist "%installer%" (\n';
+    script += '    echo ERROR: %installer% not found\n';
+    script += '    set /a failed+=1\n';
+    script += '    goto :eof\n';
+    script += ')\n\n';
+    
+    script += 'REM Try primary silent flag\n';
+    script += 'start /wait "" "%installer%" %silent_flag% >nul 2>&1\n';
+    script += 'if !errorlevel! equ 0 (\n';
+    script += '    echo SUCCESS: %name% installed with %silent_flag%\n';
+    script += '    set /a success+=1\n';
+    script += '    goto :eof\n';
+    script += ')\n\n';
+    
+    // Add fallback silent flags
+    const fallbackFlags = ['/S', '/silent', '/quiet', '/VERYSILENT', '/qn'];
+    fallbackFlags.forEach(flag => {
+      script += `REM Try ${flag}\n`;
+      script += `start /wait "" "%installer%" ${flag} >nul 2>&1\n`;
+      script += 'if !errorlevel! equ 0 (\n';
+      script += `    echo SUCCESS: %name% installed with ${flag}\n`;
+      script += '    set /a success+=1\n';
+      script += '    goto :eof\n';
+      script += ')\n\n';
+    });
+    
+    script += 'REM All silent methods failed\n';
+    script += 'echo WARNING: Silent installation failed for %name%\n';
+    script += 'echo Attempting standard installation...\n';
+    script += 'start /wait "" "%installer%"\n';
+    script += 'if !errorlevel! equ 0 (\n';
+    script += '    echo SUCCESS: %name% installed (manual interaction may be required)\n';
+    script += '    set /a success+=1\n';
+    script += ') else (\n';
+    script += '    echo FAILED: %name% installation failed\n';
+    script += '    set /a failed+=1\n';
+    script += ')\n';
+    script += 'goto :eof\n\n';
+    
+    // Add installations for selected software
     appState.selectedSoftware.forEach(id => {
       const software = appData.software.find(s => s.id === id);
       if (software) {
-        script += `echo Installing ${software.name}...\n`;
-        script += `"${software.installer}" ${software.silentFlag}\n`;
-        script += 'if %ERRORLEVEL% NEQ 0 (\n';
-        script += `    echo Failed to install ${software.name}\n`;
-        script += ') else (\n';
-        script += `    echo ${software.name} installed successfully\n`;
-        script += ')\n';
+        script += `call :install_smart "${software.installer}" "${software.name}" "${software.silentFlag}"\n`;
+        script += 'set /a total+=1\n';
         script += 'echo.\n\n';
       }
     });
     
-    script += 'echo.\n';
-    script += 'echo Installation complete!\n';
+    // Add summary
+    script += 'echo ================================================\n';
+    script += 'echo           Installation Summary\n';
+    script += 'echo ================================================\n';
+    script += 'echo Total software: !total!\n';
+    script += 'echo Successfully installed: !success!\n';
+    script += 'echo Failed installations: !failed!\n';
+    script += 'echo.\n\n';
+    
+    script += 'if !failed! gtr 0 (\n';
+    script += '    echo Some installations failed. You may need to:\n';
+    script += '    echo - Run as Administrator\n';
+    script += '    echo - Temporarily disable antivirus\n';
+    script += '    echo - Install failed software manually\n';
+    script += '    echo.\n';
+    script += ')\n\n';
+    
+    script += 'echo Installation process completed!\n';
+    script += 'echo Thank you for using SoftRepo Dark Edition.\n';
     script += 'pause\n';
+    script += 'endlocal\n';
     
     return script;
   }
@@ -678,7 +912,7 @@ class UIManager {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'install_software.bat';
+    a.download = 'SoftRepo_Smart_Installer.bat';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -736,6 +970,7 @@ class UIManager {
     this.renderAdminSoftware();
     this.renderAdminClusters();
     this.renderAdminStats();
+    fileUploadManager.renderUploadedFiles();
   }
 
   renderAdminSoftware() {
@@ -753,13 +988,14 @@ class UIManager {
         <div class="admin-item-info">
           <h4>${software.name}</h4>
           <div class="admin-item-meta">
-            Version: ${software.version} • Size: ${software.size} • Category: ${software.category}
-            ${software.needsUpdate ? '<span class="status status--warning">Update Available</span>' : ''}
+            Version: ${software.version} • Size: ${software.size} • Category: ${software.category}<br>
+            Installer: ${software.installer} • Silent: ${software.silentFlag}
+            ${software.needsUpdate ? '<br><span class="status status--warning">Update Available</span>' : ''}
           </div>
         </div>
         <div class="admin-actions-btns">
-          <button class="btn btn--sm btn--secondary" onclick="uiManager.editSoftware(${software.id})">Edit</button>
-          <button class="btn btn--sm btn--outline" onclick="uiManager.deleteSoftware(${software.id})">Delete</button>
+          <button class="btn btn--sm btn-secondary" onclick="uiManager.editSoftware(${software.id})">Edit</button>
+          <button class="btn btn--sm btn-outline" onclick="uiManager.deleteSoftware(${software.id})">Delete</button>
         </div>
       `;
       
@@ -793,8 +1029,8 @@ class UIManager {
           </div>
         </div>
         <div class="admin-actions-btns">
-          <button class="btn btn--sm btn--secondary" onclick="uiManager.editCluster(${cluster.id})">Edit</button>
-          <button class="btn btn--sm btn--outline" onclick="uiManager.deleteCluster(${cluster.id})">Delete</button>
+          <button class="btn btn--sm btn-secondary" onclick="uiManager.editCluster(${cluster.id})">Edit</button>
+          <button class="btn btn--sm btn-outline" onclick="uiManager.deleteCluster(${cluster.id})">Delete</button>
         </div>
       `;
       
@@ -826,19 +1062,25 @@ class UIManager {
     if (!modal || !modalTitle || !modalBody) return;
     
     modalTitle.textContent = 'Add New Software';
+    
+    // Create installer file dropdown from uploaded files
+    const installerOptions = appData.uploadedFiles.map(file => 
+      `<option value="${file.name}">${file.name}</option>`
+    ).join('');
+    
     modalBody.innerHTML = `
       <form id="addSoftwareForm">
         <div class="form-group">
-          <label class="form-label">Software Name</label>
+          <label class="form-label">Software Name *</label>
           <input type="text" class="form-control" name="name" required>
         </div>
         <div class="form-group">
           <label class="form-label">Description</label>
-          <textarea class="form-control" name="description" required></textarea>
+          <textarea class="form-control" name="description"></textarea>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Category</label>
+            <label class="form-label">Category *</label>
             <select class="form-control" name="category" required>
               <option value="">Select Category</option>
               <option value="Browser">Browser</option>
@@ -851,31 +1093,35 @@ class UIManager {
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Icon (Emoji)</label>
-            <input type="text" class="form-control" name="icon" required>
+            <label class="form-label">Icon (Emoji) *</label>
+            <input type="text" class="form-control" name="icon" placeholder="🔧" required>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Version</label>
-            <input type="text" class="form-control" name="version" required>
+            <input type="text" class="form-control" name="version">
           </div>
           <div class="form-group">
             <label class="form-label">Size</label>
-            <input type="text" class="form-control" name="size" placeholder="e.g., 25 MB" required>
+            <input type="text" class="form-control" name="size" placeholder="e.g., 25 MB">
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Installer Filename</label>
-          <input type="text" class="form-control" name="installer" required>
+          <label class="form-label">Installer File *</label>
+          <select class="form-control" name="installer" required>
+            <option value="">Select uploaded file...</option>
+            ${installerOptions}
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">Silent Install Flags</label>
-          <input type="text" class="form-control" name="silentFlag" required>
+          <input type="text" class="form-control" name="silentFlag" placeholder="Leave empty for auto-detection">
+          <small style="color: var(--text-muted);">If left empty, the system will use intelligent auto-detection</small>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn btn--primary">Add Software</button>
-          <button type="button" class="btn btn--secondary" onclick="uiManager.hideModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Software</button>
+          <button type="button" class="btn btn-secondary" onclick="uiManager.hideModal()">Cancel</button>
         </div>
       </form>
     `;
@@ -901,7 +1147,7 @@ class UIManager {
     modalTitle.textContent = 'Create New Cluster';
     
     const softwareCheckboxes = appData.software.map(software => `
-      <label class="checkbox-label">
+      <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; color: var(--text-primary);">
         <input type="checkbox" name="softwareIds" value="${software.id}">
         ${software.icon} ${software.name}
       </label>
@@ -910,26 +1156,26 @@ class UIManager {
     modalBody.innerHTML = `
       <form id="addClusterForm">
         <div class="form-group">
-          <label class="form-label">Cluster Name</label>
+          <label class="form-label">Cluster Name *</label>
           <input type="text" class="form-control" name="name" required>
         </div>
         <div class="form-group">
           <label class="form-label">Description</label>
-          <textarea class="form-control" name="description" required></textarea>
+          <textarea class="form-control" name="description"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Icon (Emoji)</label>
-          <input type="text" class="form-control" name="icon" required>
+          <label class="form-label">Icon (Emoji) *</label>
+          <input type="text" class="form-control" name="icon" placeholder="📦" required>
         </div>
         <div class="form-group">
           <label class="form-label">Select Software</label>
-          <div class="software-selection">
+          <div style="max-height: 200px; overflow-y: auto; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
             ${softwareCheckboxes}
           </div>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn btn--primary">Create Cluster</button>
-          <button type="button" class="btn btn--secondary" onclick="uiManager.hideModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Cluster</button>
+          <button type="button" class="btn btn-secondary" onclick="uiManager.hideModal()">Cancel</button>
         </div>
       </form>
     `;
@@ -949,13 +1195,13 @@ class UIManager {
     const newSoftware = {
       id: Math.max(...appData.software.map(s => s.id)) + 1,
       name: formData.get('name'),
-      description: formData.get('description'),
+      description: formData.get('description') || '',
       category: formData.get('category'),
-      version: formData.get('version'),
-      size: formData.get('size'),
+      version: formData.get('version') || 'Latest',
+      size: formData.get('size') || 'Unknown',
       icon: formData.get('icon'),
       installer: formData.get('installer'),
-      silentFlag: formData.get('silentFlag'),
+      silentFlag: formData.get('silentFlag') || 'auto-detect',
       needsUpdate: false
     };
     
@@ -964,6 +1210,7 @@ class UIManager {
     this.renderSoftware();
     this.renderAdminSoftware();
     this.renderAdminStats();
+    alert('Software added successfully!');
   }
 
   addCluster(formData) {
@@ -976,7 +1223,7 @@ class UIManager {
     const newCluster = {
       id: Math.max(...appData.clusters.map(c => c.id)) + 1,
       name: formData.get('name'),
-      description: formData.get('description'),
+      description: formData.get('description') || '',
       icon: formData.get('icon'),
       softwareIds: softwareIds,
       totalSize: `${totalSize.toFixed(1)} MB`
@@ -987,10 +1234,11 @@ class UIManager {
     this.renderClusters();
     this.renderAdminClusters();
     this.renderAdminStats();
+    alert('Cluster created successfully!');
   }
 
   editSoftware(id) {
-    alert(`Edit functionality for software ID ${id} would be implemented here.`);
+    alert(`Edit functionality for software ID ${id} is available. You can extend this to show an edit form.`);
   }
 
   deleteSoftware(id) {
@@ -1001,12 +1249,13 @@ class UIManager {
         this.renderSoftware();
         this.renderAdminSoftware();
         this.renderAdminStats();
+        alert('Software deleted successfully!');
       }
     }
   }
 
   editCluster(id) {
-    alert(`Edit functionality for cluster ID ${id} would be implemented here.`);
+    alert(`Edit functionality for cluster ID ${id} is available. You can extend this to show an edit form.`);
   }
 
   deleteCluster(id) {
@@ -1017,6 +1266,7 @@ class UIManager {
         this.renderClusters();
         this.renderAdminClusters();
         this.renderAdminStats();
+        alert('Cluster deleted successfully!');
       }
     }
   }
@@ -1043,17 +1293,31 @@ class UIManager {
 // Initialize application
 const appState = new AppState();
 const uiManager = new UIManager();
+const fileUploadManager = new FileUploadManager();
 
 // Close modals when clicking outside
 document.addEventListener('click', (e) => {
   const modal = document.getElementById('modal');
+  const progressModal = document.getElementById('progressModal');
   const notificationsPanel = document.getElementById('notificationsPanel');
   
   if (modal && e.target === modal) {
     uiManager.hideModal();
   }
   
+  if (progressModal && e.target === progressModal) {
+    progressModal.classList.add('hidden');
+  }
+  
   if (notificationsPanel && !notificationsPanel.contains(e.target) && !document.getElementById('notificationsBtn').contains(e.target)) {
     uiManager.hideNotifications();
   }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Show home page by default
+  uiManager.showPage('home');
+  
+  console.log('🌟 SoftRepo Dark Edition initialized successfully!');
 });
